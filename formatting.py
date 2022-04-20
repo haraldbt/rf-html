@@ -1,11 +1,11 @@
-from matplotlib.pyplot import prism
 import pandas as pd
 
 
 def format_df(
         df: pd.DataFrame,
         label_names: dict[str, str],
-        label_formats: dict[str, str]) -> pd.DataFrame:
+        label_formats: dict[str, str]
+) -> pd.DataFrame:
     number_labels = {key: label_names[key] for key in ('price', 'abv', 'volume')}
     df = process_numbers(df, **number_labels)
 
