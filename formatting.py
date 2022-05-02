@@ -1,42 +1,37 @@
 import pandas as pd
 
 
-def format_df(
-        df: pd.DataFrame,
-        label_names: dict[str, str],
-        label_formats: dict[str, str]
-) -> pd.DataFrame:
-    number_labels = {key: label_names[key] for key in ('price', 'abv', 'volume')}
-    df = process_numbers(df, **number_labels)
-
-    formats = {label_names[key]: val for key, val in label_formats.items()}
-    df = apply_format(df, formats)
-    return df
-
-
-def process_numbers(df: pd.DataFrame, price: str, abv: str, volume: str) -> pd.DataFrame:
+def prepare_df(df: pd.DataFrame, on_menu: str, labels: dict[str, str]) -> pd.DataFrame:
     df = df.copy()
-    df[price] = df[price].apply(round)
-    #df[abv] = (df[abv] * 100).apply(round, ndigits=1)
-    df[volume] = (df[volume] * 100).apply(round)
+    mask = df.loc[:, on_menu].notna()
+    columns = list(labels.values())
+    df = df.loc[mask, columns]
+    df.set_index(labels['product_name'], inplace=True)
     return df
 
 
-def apply_format(df: pd.DataFrame, formats: dict[str, str]) -> pd.DataFrame:
+def format_df(df: pd.DataFrame, labels: dict[str, str], formats: dict[str, str]) -> pd.DataFrame:
     df = df.copy()
-    for label, format_string in formats.items():
-        df[label] = df[label].apply(format_string.format)
+
+    # Replace na
+    df.loc[:, labels['abv']].fillna(0, inplace=True)
+    df.loc[:, labels['origin']].fillna(str(), inplace=True)
+
+    # Round numbers
+    price = labels['price']
+    volume = labels['volume']
+    df.loc[:, price] = df.loc[:, price].apply(round)
+    df.loc[:, volume] = (df.loc[:, volume] * 100).apply(round)
+
+    # Format numbers as strings
+    for key, format_string in formats.items():
+        label = labels[key]
+        df.loc[:, label] = df.loc[:, label].apply(format_string.format)
+
     return df
 
 
-def apply(df: pd.DataFrame, funcs):
-    df = df.copy()
-    for label, func in funcs.items():
-        df[label] = df[label].apply(func)
-    return df
-
-
-if __name__ == '__main__':
+def main():
     label_names = {
         'volume': 'Størrelse',
         'abv': 'ABV',
@@ -54,9 +49,14 @@ if __name__ == '__main__':
     file = 'Meny-RF-V22.xlsx'
     data = pd.read_excel(file)
     on_menu = 'Til salg'
-    mask = data[on_menu].notna()
-    df = data[mask][label_names.values()]
 
-    result = format_df(df, label_names=label_names, label_formats=label_formats)
-    with open('out.html', 'w') as out:
-        out.write(result.to_html())
+    df = prepare_df(data, on_menu=on_menu, labels=label_names)
+    df = format_df(df, labels=label_names, formats=label_formats)
+    grouped = df.groupby(label_names['category'])
+    for category, products in grouped:
+        print(category)
+        print(products)
+        print()
+
+if __name__ == '__main__':
+    main()
