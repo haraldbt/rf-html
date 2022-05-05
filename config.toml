@@ -1,0 +1,20 @@
+[labels]
+volume = 'Størrelse'
+abv = 'ABV'
+price = 'Eksternpris'
+origin = 'Land'
+category = 'Kategori'
+product_name = 'Vare'
+on_menu = 'Til salg'
+
+[formats]
+abv = '{:.1%}'
+volume = '{:d}cl'
+price = 'kr {:d},-'
+
+[template]
+category = 'categories'
+product_name = 'name'
+abv = 'abv'
+origin = 'country'
+price = 'price'
