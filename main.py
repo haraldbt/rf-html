@@ -3,7 +3,7 @@ import pandas as pd
 
 
 def main():
-    label_names, df = prepare_file()
+    df = prepare_file()
     grouped = df.groupby('category')
     for category, products in grouped:
         print(category)
@@ -31,7 +31,7 @@ def prepare_file():
 
     df = prepare_df(data, labels=label_names)
     df = format_df(df, formats=label_formats)
-    return label_names,df
+    return df
 
 
 if __name__ == '__main__':
